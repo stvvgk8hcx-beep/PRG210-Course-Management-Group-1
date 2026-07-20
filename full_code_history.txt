@@ -1,0 +1,1640 @@
+COMMIT 3cdd176  2026-07-20  added empty remaining files
+diff --git a/AdminInterface.cpp b/AdminInterface.cpp
+new file mode 100644
+index 0000000..e69de29
+diff --git a/AdminInterface.h b/AdminInterface.h
+new file mode 100644
+index 0000000..e69de29
+diff --git a/StudentInterface.cpp b/StudentInterface.cpp
+new file mode 100644
+index 0000000..e69de29
+diff --git a/cart.cpp b/cart.cpp
+new file mode 100644
+index 0000000..e69de29
+diff --git a/cart.h b/cart.h
+new file mode 100644
+index 0000000..e69de29
+diff --git a/interface.cpp b/interface.cpp
+new file mode 100644
+index 0000000..e69de29
+diff --git a/interface.h b/interface.h
+new file mode 100644
+index 0000000..e69de29
+
+COMMIT 9152f34  2026-07-20  added empty remaining files
+diff --git a/StudentInterface.h b/StudentInterface.h
+new file mode 100644
+index 0000000..e69de29
+
+COMMIT de9ce78  2026-07-20  weekend push commit
+diff --git a/CSVUtils.cpp b/CSVUtils.cpp
+index 917e15d..90d1363 100644
+--- a/CSVUtils.cpp
++++ b/CSVUtils.cpp
+@@ -34,22 +34,28 @@ bool loadFromCSV(const char *filename)
+         std::getline(deptStream, deptName, ',');
+         deptStream >> totalCourses;
+ 
+-        StoreDepartments[i] = Department(deptName);
++        // added .c_str(). deptName is a std::string but my Department constructor
++        // wants a const char*, .c_str() makes string a char
++        StoreDepartments[i] = Department(deptName.c_str());
+ 
+         for (int j = 0; j < totalCourses; ++j)
+         {
+             if (!std::getline(file, line))
+                 break;
+             std::stringstream courseStream(line);
+-            std::string courseNumber, courseName, schedule;
++            std::string courseNumber, courseSection, courseName, schedule; // ADDED courseSection - Calvin
+             double price;
+ 
+             std::getline(courseStream, courseNumber, ',');
++            std::getline(courseStream, courseSection, ',');  // added read my section, right after the number
+             std::getline(courseStream, courseName, ',');
+             std::getline(courseStream, schedule, ',');
+             courseStream >> price;
+ 
+-            StoreDepartments[i].addCourse(Course(courseNumber, courseName, schedule, price));
++            // added courseSection so my Course gets all 5 pieces, and put .c_str()
++            // on every string so they fit my const char* constructor (this was the red error on this line)
++            StoreDepartments[i].addCourse(Course(courseNumber.c_str(), courseSection.c_str(),
++                                                 courseName.c_str(), schedule.c_str(), price));
+         }
+     }
+ 
+@@ -75,11 +81,14 @@ bool saveToCSV(const char *filename)
+         for (size_t j = 0; j < dept.getCourseCount(); ++j)
+         {
+             Course *c = dept.getCourse(j);
+-            file << c->getCourseNumber() << ", " << c->getCourseName() << ", " << c->getSchedule() << ", " << c->getPrice() << "\n";
++           // added getCourseSection() so the section I read on load gets written
++            // back out too, in the same spot (right after the number) so load and save stay a matching pair
++            file << c->getCourseNumber() << ", " << c->getCourseSection() << ", "
++                 << c->getCourseName() << ", " << c->getSchedule() << ", " << c->getPrice() << "\n";
+         }
+     }
+ 
+     file.close();
+     std::cout << "Changes saved to CSV successfully.\n";
+     return true;
+-}
+\ No newline at end of file
++}
+diff --git a/course.cpp b/course.cpp
+index 0bf68a0..a8e8f1f 100644
+--- a/course.cpp
++++ b/course.cpp
+@@ -1,35 +1,82 @@
+-#include "course.h"
+-// its getting iostream and cstring from header!
++#include "course.h" // its getting iostream and cstring from header!
+ 
+ Course::Course()
+ {
+     courseNumber[0] = '\0';
+     courseSection[0] = '\0';
+-    courseName[0] = '\0';
+     courseSchedule[0] = '\0';
+     price = 0.0;
+ 
++    courseName = new char[1];   // from Lab 8 dynamic, start as an empty string ""
++    courseName[0] = '\0';
+ }
+ 
+ // Week 8 Overloaded constructor check page 23
+-
+ Course::Course(const char* num, const char* sect, const char* name,
+        const char* sched, double p)
+ {
+     strcpy(courseNumber, num);
+     strcpy(courseSection, sect);
+-    strcpy(courseName, name);
+     strcpy(courseSchedule, sched);
+ 
++    courseName = new char[strlen(name) + 1]; // size is EXACTLY to the name (+1 for the \0) - more memory saved
++    strcpy(courseName, name);
++
+     // validate BEFORE we store the data because it will reject the bad data and try a safe one
+     if (p > 0)
+         price = p;
+     else
+         price = 0.0;     // The price cannot be a negative so it will just show 0 :)
+ }
++
++
++
++// DESTRUCTOR
++Course::~Course()
++{
++    delete[] courseName;   // must be delete[] because it was new char[]
++    courseName = nullptr;
++}
++
++// COPY CONSTRUCTOR or deep copy
++Course::Course(const Course& other)
++{
++    strcpy(courseNumber, other.courseNumber);
++    strcpy(courseSection, other.courseSection);
++    strcpy(courseSchedule, other.courseSchedule);
++    price = other.price;
++
++    courseName = new char[strlen(other.courseName) + 1]; // allocate its OWN memory
++    strcpy(courseName, other.courseName);                // then copy the characters (deep, not shared)
++}
++
++// COPY-ASSIGNMENT - deep copy for existing objects
++Course& Course::operator=(const Course& other)
++{
++    if (this == &other) return *this;   // 1) self-assignment guard
++
++    strcpy(courseNumber, other.courseNumber);
++    strcpy(courseSection, other.courseSection);
++    strcpy(courseSchedule, other.courseSchedule);
++    price = other.price;
++
++    delete[] courseName;                                 // 2) free the old memory first (no leak)
++    courseName = new char[strlen(other.courseName) + 1]; // 3) new memory + copy
++    strcpy(courseName, other.courseName);
++
++    return *this;                                        // 4) return *this (lets a = b = c chain)
++}
++
+ // week 8 page 11 display will read the private and print them because the MEMBER functions can see the private data
+ void Course::display()
+ 
+ {
+     cout << courseNumber << " " << courseSection << " " << courseName << " (" << courseSchedule << ") $" << price << endl;
+ }
++
++// getter bodies - each just hands back one private member
++const char* Course::getCourseNumber()  { return courseNumber; }
++const char* Course::getCourseSection() { return courseSection; }
++const char* Course::getCourseName()    { return courseName; }
++const char* Course::getSchedule()      { return courseSchedule; }
++double      Course::getPrice()         { return price; }
+diff --git a/course.h b/course.h
+index 4fe59f6..c191ded 100644
+--- a/course.h
++++ b/course.h
+@@ -10,18 +10,16 @@ using namespace std; // instead of std::string
+ 
+ class Course
+ {
+-// We can use dynamic memory perhaps for courseName or others to not use up unessisary memory check week 10 classes with dy
++// Implemented "we can use dynamic memory for courseName to not use up unessisary memory"
+ private:
+ 
+-    Course(const Course &);
+-
+ // data members are private
+ 
+ // department must use a character array for the names so char not int
+     char courseNumber[10]; // PRG210 = 6 + \0, 10 leaves room
+     char courseSection[4]; // NAA or NBB which is 4 NBB\0
+-    char* courseName; // user will decide, dynamic
+-    char courseSchedule[4]; // M,/,W,\0 // \0 means the string will end there so its just M/W // one of M/W (Mon/Wed), T/R (Tue/Thu), W/F (Wed/Fri)
++    char* courseName;      // DYNAMIC sized to  strlen(name)+1 instead of a fixed [50] -> saves memory / makes me smile
++    char courseSchedule[4]; // M,/,W,\0 // one of M/W (Mon/Wed), T/R (Tue/Thu), W/F (Wed/Fri)
+     double price; //should not be a negative number
+ 
+ 
+@@ -34,8 +32,20 @@ public:
+     Course(const char* num, const char* sect, const char* name,
+        const char* sched, double p);
+ 
++    // rule of Three (Lab 8) - I know is now REQUIRED because courseName owns heap memory new[]
++    ~Course();                                // destructor
++    Course(const Course& other);              // copy constructor
++    Course& operator=(const Course& other);   // copy-assignment
++
+     void display();
+ 
++    // getters so the professor's CSVUtils.cpp can READ each private value when it saves
++    const char* getCourseNumber();
++    const char* getCourseSection();
++    const char* getCourseName();
++    const char* getSchedule();
++    double getPrice();
++
+ };
+ 
+ #endif
+diff --git a/department.cpp b/department.cpp
+index 8028908..37cce8a 100644
+--- a/department.cpp
++++ b/department.cpp
+@@ -20,16 +20,43 @@ Department::Department(const char* name)
+ 
+ }
+ //now destructor to free that memory
+-Department::Department()
++Department::~Department()   // fixed was missing ~ makes it the DESTRUCTOR
+ {
+     delete[] courses;
+     courses = nullptr;
+ 
+ }
+ // look up proper array want it to grow when adding new and delete the previous
+-void Department::addCourse(Course c)
++void Department::addCourse(Course c)   // the loop and return were unfinished/broken before
+ {
+-    Course* bigger = new Course[courseCount + 1];
+-    for (int i = 0; )
++    Course* bigger = new Course[courseCount + 1]; // make an array one bigger
++
++    for (int i = 0; i < courseCount; i++)         // copy the old courses over (was "i > 0, i++" which never ran)
++        bigger[i] = courses[i];
+ 
++    bigger[courseCount] = c;                      // drop the new course on the end
++
++    delete[] courses;                             // free the old smaller array
++    courses = bigger;                             // point at the new one
++    courseCount++;                                // one more course now
+ }
++
++// added this body - prints each course by reusing Course::display!
++void Department::listCourse()
++{
++    if (courseCount == 0)
++    {
++        cout << "No courses in this department." << endl;
++        return;
++    }
++    for (int i = 0; i < courseCount; i++)
++    {
++        cout << i + 1 << ". ";   // numbered list
++        courses[i].display();
++    }
++}
++
++// added these getter bodies so other files can read the private data
++const char* Department::getName()        { return departmentName; }
++int         Department::getCourseCount() { return courseCount; }
++Course*     Department::getCourse(int index) { return &courses[index]; } // pointer to the slot in the array
+diff --git a/department.h b/department.h
+index 07bf9d1..67ca7cf 100644
+--- a/department.h
++++ b/department.h
+@@ -1,7 +1,6 @@
+ #ifndef DEPARTMENT_H
+ #define DEPARTMENT_H
+ 
+-// COMMIT NOTES - Calvin
+ // I made this file right after I did course. reasoning is Department will hold many courses is
+ 
+ // Course = one thing, Department = many things.
+diff --git a/main b/main
+index 8e682f8..9e59883 100755
+Binary files a/main and b/main differ
+diff --git a/main.cpp b/main.cpp
+index 2c70c0a..e667795 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -5,10 +5,12 @@
+ 
+ #include "course.h"
+ #include <iostream>
++#include <limits>   // prof rec gives numeric_limits so no more bad inputs :)
+ using namespace std;
+ 
+ Department* StoreDepartments = nullptr;
+ int TotalDepartments = 0;
++const char* csvFile = "courses.csv";   // added path to csv file ask prof about its location when demonstrating
+ 
+ int main() {
+ 
+@@ -18,7 +20,7 @@ int main() {
+     cout << "-----------------------------------------------------------"     << endl;
+     cout << "Welcome! Please, select an option from the following menu: "     << endl;
+     cout << "-----------------------------------------------------------"     << endl;
+-    cout << "|                        2. Student                       |"       << endl;
++    cout << "|                        1. Student                       |"       << endl; // fixed was 2.Student
+     cout << "|                        2. Admin                         |"      << endl;
+     cout << "|                        3. Exit                          |"       << endl;
+     cout << "-----------------------------------------------------------"     << endl;
+@@ -26,8 +28,13 @@ int main() {
+     cout << "Enter your choice [1, 2, 3]: ";
+     cin >> options;
+ 
+-    while (options < 1 || options > 3) { //so long as the options are less than 5 or greater than 3, we will keep asking // for a valid input - Calvin
+-                                         //having issues where input of a high number (10000000000+) or letter causes it to freak out - Calvin
++    // is NOW cin.fail() so a LETTER entered value or a HUGE number doesn't make the program freak out like me on a dancefloor
++    // now it will "cin.fail()" when its not a valid int input is true and is inside the loop
++
++    while (cin.fail() || options < 1 || options > 3) { //so long as the options are less than 1 or greater than 3, we keep asking - Calvin
++
++        cin.clear();                                          // reset/recycle the fail flag so cin works again
++        cin.ignore(numeric_limits<streamsize>::max(), '\n');  // remove the leftover bad input
+ 
+         cout << "-----------------------------------------------------------" << endl;
+         cout << "Please enter a valid responce from the menu: "               << endl  // ask prof why no semicolon here
+@@ -40,22 +47,9 @@ int main() {
+         cin >> options;
+     }
+ 
++    // this is where an Interface pointer will point at too
++    // AdminInterface + StudentInterface !
++
+     return 0;
+ }
+ 
+-// i looked up the while loop and it seems to be the best option and am just going to use her wording for this - Calvin
+-// its nice - Calvin
+-
+-/*main.cpp
+-
+-This is the file that will have the main function. To make the implementation simpler you can declare following three global variables in this file and can access them in other cpp files using extern keyword
+-
+-    Department * StoreDepartments = nullptr;
+-    int TotalDepartments = 0;
+-    const char * csvFile = “Your/Path/To/CSVFile.cs”;
+-
+-The main function should also:
+-
+-    Read the csv file if it exists at start and should load data in the StoreDepartments array (see the format of this csv file outlined below)
+-    Have a pointer of Interface class and be initialized with the appropriate derived class object based on the selected role (Admin or Student) (it will be the polymorphism here)
+-*/
+
+COMMIT 7b4db11  2026-07-17  asdasdasdasd
+diff --git a/department.cpp b/department.cpp
+index c2a1132..8028908 100644
+--- a/department.cpp
++++ b/department.cpp
+@@ -9,7 +9,8 @@ Department::Department()
+ 
+ }
+ 
+-Department::Department(const char*, name)
++Department::Department(const char* name)
++
+ {
+     strcpy(departmentName, name);
+     courses = nullptr;
+diff --git a/main.cpp b/main.cpp
+index 9403f7a..2c70c0a 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -1,11 +1,15 @@
+ // header files
+-// header files        // Currantly when you run the program and select 1,2,3
+-// header files
++#include "department.h"      // Currantly when you run the program and select 1,2,3
+ // header files
++#include "CSVUtils.h" //added file
++
+ #include "course.h"
+ #include <iostream>
+ using namespace std;
+ 
++Department* StoreDepartments = nullptr;
++int TotalDepartments = 0;
++
+ int main() {
+ 
+     int options;
+
+COMMIT b6883d6  2026-07-16  daily update added CVS header and department CPP partial
+diff --git a/CSVUtils.h b/CSVUtils.h
+new file mode 100644
+index 0000000..8cadbb6
+--- /dev/null
++++ b/CSVUtils.h
+@@ -0,0 +1,17 @@
++#ifndef CSVUTILS_H
++#define CSVUTILS_H
++
++
++#include "department.h"
++
++
++
++
++bool loadFromCSV(const char* filename);
++bool saveToCSV(const char* filename);
++
++
++
++
++
++#endif
+diff --git a/department.cpp b/department.cpp
+index b11d810..c2a1132 100644
+--- a/department.cpp
++++ b/department.cpp
+@@ -1,3 +1,34 @@
+ #include "department.h"
+ 
+ 
++Department::Department()
++{
++    departmentName[0] = '\0';
++    courses = nullptr; // initalize your pointers :)
++    courseCount = 0;
++
++}
++
++Department::Department(const char*, name)
++{
++    strcpy(departmentName, name);
++    courses = nullptr;
++    courseCount = 0;
++// Department starts with its name
++// Overload Constructor from week 8
++
++}
++//now destructor to free that memory
++Department::Department()
++{
++    delete[] courses;
++    courses = nullptr;
++
++}
++// look up proper array want it to grow when adding new and delete the previous
++void Department::addCourse(Course c)
++{
++    Course* bigger = new Course[courseCount + 1];
++    for (int i = 0; )
++
++}
+diff --git a/department.h b/department.h
+index 295c699..07bf9d1 100644
+--- a/department.h
++++ b/department.h
+@@ -36,11 +36,11 @@ class Department
+     // comment even said "Department WILL need a destructor" - past me was right! go past me
+         const char* getName();
+ 
+-        int getCourseName();
+ 
+-        int getCourseCount(); // display the number of courses
+-        Course getCourse(int index); // this will come
+ 
++        int getCourseCount(); // display the number of courses
++        Course* getCourse(int index); // this will come
++        // now returns Course as a pointer like the prof CVS
+ 
+ };
+ 
+
+COMMIT 69676a6  2026-07-15  added CSVUtils file
+diff --git a/CSVUtils.cpp b/CSVUtils.cpp
+new file mode 100644
+index 0000000..917e15d
+--- /dev/null
++++ b/CSVUtils.cpp
+@@ -0,0 +1,85 @@
++#include "CSVUtils.h"
++#include <fstream>
++#include <iostream>
++#include <sstream>
++#include <string>
++
++extern Department *StoreDepartments;
++extern int TotalDepartments;
++
++bool loadFromCSV(const char *filename)
++{
++    std::ifstream file(filename);
++    if (!file.is_open())
++    {
++        std::cout << "CSV file not found. Starting with empty data.\n";
++        return false;
++    }
++
++    file >> TotalDepartments;
++    file.ignore(); // ignore newline
++
++    delete[] StoreDepartments;
++    StoreDepartments = new Department[TotalDepartments];
++
++    std::string line;
++    for (int i = 0; i < TotalDepartments; ++i)
++    {
++        if (!std::getline(file, line))
++            break;
++        std::stringstream deptStream(line);
++        std::string deptName;
++        int totalCourses = 0;
++
++        std::getline(deptStream, deptName, ',');
++        deptStream >> totalCourses;
++
++        StoreDepartments[i] = Department(deptName);
++
++        for (int j = 0; j < totalCourses; ++j)
++        {
++            if (!std::getline(file, line))
++                break;
++            std::stringstream courseStream(line);
++            std::string courseNumber, courseName, schedule;
++            double price;
++
++            std::getline(courseStream, courseNumber, ',');
++            std::getline(courseStream, courseName, ',');
++            std::getline(courseStream, schedule, ',');
++            courseStream >> price;
++
++            StoreDepartments[i].addCourse(Course(courseNumber, courseName, schedule, price));
++        }
++    }
++
++    file.close();
++    std::cout << "Data loaded from CSV successfully.\n";
++    return true;
++}
++
++bool saveToCSV(const char *filename)
++{
++    std::ofstream file(filename);
++    if (!file.is_open())
++    {
++        std::cout << "Failed to open CSV file for writing.\n";
++        return false;
++    }
++
++    file << TotalDepartments << "\n";
++    for (int i = 0; i < TotalDepartments; ++i)
++    {
++        Department &dept = StoreDepartments[i];
++        file << dept.getName() << ", " << dept.getCourseCount() << "\n";
++        for (size_t j = 0; j < dept.getCourseCount(); ++j)
++        {
++            Course *c = dept.getCourse(j);
++            file << c->getCourseNumber() << ", " << c->getCourseName() << ", " << c->getSchedule() << ", " << c->getPrice() << "\n";
++        }
++    }
++
++    file.close();
++    std::cout << "Changes saved to CSV successfully.\n";
++    return true;
++}
+\ No newline at end of file
+
+COMMIT 3142963  2026-07-15  Final Morning Update
+diff --git a/department.cpp b/department.cpp
+new file mode 100644
+index 0000000..b11d810
+--- /dev/null
++++ b/department.cpp
+@@ -0,0 +1,3 @@
++#include "department.h"
++
++
+diff --git a/department.h b/department.h
+new file mode 100644
+index 0000000..295c699
+--- /dev/null
++++ b/department.h
+@@ -0,0 +1,47 @@
++#ifndef DEPARTMENT_H
++#define DEPARTMENT_H
++
++// COMMIT NOTES - Calvin
++// I made this file right after I did course. reasoning is Department will hold many courses is
++
++// Course = one thing, Department = many things.
++
++
++#include "course.h" //access the course objects we need for departments to access to
++
++
++class Department
++{
++    private:
++
++        char departmentName[50]; // we need char array for the name
++
++        Course* courses; // pointer to a dynamic array of course so will grow at runtime
++
++        int courseCount; // stores an integer for the amount of classes they have in the department
++
++
++    public:
++
++        Department(); //default constructo week 8
++
++        Department(const char* name); //overload constructor
++
++        ~Department(); //deconstructor free the dynamic array different than course!  week 8 p19
++
++        void addCourse(Course c); // will grow this array by one and stores the course
++
++        void listCourse();  // will print the courses in a list by reusing Course::display
++        //see course.cpp line 31
++    // comment even said "Department WILL need a destructor" - past me was right! go past me
++        const char* getName();
++
++        int getCourseName();
++
++        int getCourseCount(); // display the number of courses
++        Course getCourse(int index); // this will come
++
++
++};
++
++#endif
+diff --git a/main b/main
+index 1b75892..8e682f8 100755
+Binary files a/main and b/main differ
+
+COMMIT 5fa2e35  2026-07-15  o
+diff --git a/Course.cpp b/course.cpp
+similarity index 98%
+rename from Course.cpp
+rename to course.cpp
+index 38a66e8..0bf68a0 100644
+--- a/Course.cpp
++++ b/course.cpp
+@@ -1,4 +1,4 @@
+-#include "Course.h"
++#include "course.h"
+ // its getting iostream and cstring from header!
+ 
+ Course::Course()
+diff --git a/Course.h b/course.h
+similarity index 100%
+rename from Course.h
+rename to course.h
+diff --git a/main.cpp b/main.cpp
+index d690950..9403f7a 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -2,7 +2,7 @@
+ // header files        // Currantly when you run the program and select 1,2,3
+ // header files
+ // header files
+-
++#include "course.h"
+ #include <iostream>
+ using namespace std;
+ 
+
+COMMIT f95cc5d  2026-07-15  fixed < 2 not < 1
+diff --git a/main b/main
+index 5f24374..1b75892 100755
+Binary files a/main and b/main differ
+diff --git a/main.cpp b/main.cpp
+index 325f36b..d690950 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -22,7 +22,7 @@ int main() {
+     cout << "Enter your choice [1, 2, 3]: ";
+     cin >> options;
+ 
+-    while (options < 2 || options > 3) { //so long as the options are less than 5 or greater than 3, we will keep asking // for a valid input - Calvin
++    while (options < 1 || options > 3) { //so long as the options are less than 5 or greater than 3, we will keep asking // for a valid input - Calvin
+                                          //having issues where input of a high number (10000000000+) or letter causes it to freak out - Calvin
+ 
+         cout << "-----------------------------------------------------------" << endl;
+
+COMMIT 76ef94e  2026-07-15  course cpp and header updates
+diff --git a/Course.cpp b/Course.cpp
+new file mode 100644
+index 0000000..38a66e8
+--- /dev/null
++++ b/Course.cpp
+@@ -0,0 +1,35 @@
++#include "Course.h"
++// its getting iostream and cstring from header!
++
++Course::Course()
++{
++    courseNumber[0] = '\0';
++    courseSection[0] = '\0';
++    courseName[0] = '\0';
++    courseSchedule[0] = '\0';
++    price = 0.0;
++
++}
++
++// Week 8 Overloaded constructor check page 23
++
++Course::Course(const char* num, const char* sect, const char* name,
++       const char* sched, double p)
++{
++    strcpy(courseNumber, num);
++    strcpy(courseSection, sect);
++    strcpy(courseName, name);
++    strcpy(courseSchedule, sched);
++
++    // validate BEFORE we store the data because it will reject the bad data and try a safe one
++    if (p > 0)
++        price = p;
++    else
++        price = 0.0;     // The price cannot be a negative so it will just show 0 :)
++}
++// week 8 page 11 display will read the private and print them because the MEMBER functions can see the private data
++void Course::display()
++
++{
++    cout << courseNumber << " " << courseSection << " " << courseName << " (" << courseSchedule << ") $" << price << endl;
++}
+diff --git a/calvincourseheader.h b/Course.h
+similarity index 58%
+rename from calvincourseheader.h
+rename to Course.h
+index 3bb1624..4fe59f6 100644
+--- a/calvincourseheader.h
++++ b/Course.h
+@@ -1,7 +1,10 @@
++#ifndef COURSE_H // my gaurd :) week 7
++#define COURSE_H
++
+ #pragma once // so if two files both #include "Course.h", the compiler only processes it once instead of complaining that Course was defined twice.
+-#include <string> // we need string for course name // used char instead
+-#include <iostream>
+ 
++#include <iostream>
++#include <cstring> // week 3 strcpt to copy into character char arrays
+ 
+ using namespace std; // instead of std::string
+ 
+@@ -9,29 +12,30 @@ class Course
+ {
+ // We can use dynamic memory perhaps for courseName or others to not use up unessisary memory check week 10 classes with dy
+ private:
++
++    Course(const Course &);
++
++// data members are private
++
+ // department must use a character array for the names so char not int
+     char courseNumber[10]; // PRG210 = 6 + \0, 10 leaves room
+     char courseSection[4]; // NAA or NBB which is 4 NBB\0
+-    char courseName[50]; // user will decide
++    char* courseName; // user will decide, dynamic
+     char courseSchedule[4]; // M,/,W,\0 // \0 means the string will end there so its just M/W // one of M/W (Mon/Wed), T/R (Tue/Thu), W/F (Wed/Fri)
+     double price; //should not be a negative number
+ 
+ 
+ public:
+-    Course();
+-    ~Course();
+-    void
+-
+-
+-// using the values to build the course for use
+-// const char* pointer I DO NOT WANT CHANGED, Price CAN change per COURSE so double without *. Keeps the naming SET and copies Price NUMBER
+-
+-// char* = the address where a string starts (like "PRG210")
+ 
++    Course();
++// will use overload constructors rather than name above just diff parameter
++// courseNumber = num
+ 
+-Course(const char* courseNumber, const char* courseSection,
+-       const char* courseName, const char* courseSchedule, double price);
++    Course(const char* num, const char* sect, const char* name,
++       const char* sched, double p);
+ 
+-// ask about getters and setters
++    void display();
+ 
+ };
++
++#endif
+diff --git a/Test_main.cpp b/Test_main.cpp
+deleted file mode 100644
+index d5cc01b..0000000
+--- a/Test_main.cpp
++++ /dev/null
+@@ -1,40 +0,0 @@
+-#include <iostream>
+-using namespace std;
+-// THIS ALL PROBABLY JUST NEEDS A WHILE LOOP BUT WE ARE GOING TO FIGURE THAT OUT - Calvin
+-int main() {
+-
+-    int logChoice;     // Currently the name for the initial decision from if they are student user or admin - Calvin
+-    int stuPassword; // Holds the student password if we are required to make one - Calvin
+-    int adminPassword; // same same but do not think they are needed just demo - Calvin
+-
+-    cout << "Welcome! Please, let us know the following options." << endl;
+-    cout << "\n1. Student" << endl;
+-    cout << "2. Admin" << endl;
+-    
+-    cout << "Enter value here: ";
+-    cin >> logChoice;
+-  
+-    if (logChoice == 2 ) {
+-        cout << "You selected Administration, please enter your IT given password: " << endl;
+-        cout << "Remember its policy to change your password once every hour and you cant use old ones!" << endl;
+-        cout << "THANK YOU FOR YOUR ATTENTION TO THIS MATTER" << endl; 
+-        cout << "Enter Password: ";
+-        cin >> adminPassword; }
+-    else if (logChoice == 1) {
+-        cout << "You selected Student, please give your user created password" << endl;
+-        cout << "Remember to pick a password stronger than 123. Please. Please... Ok but at least add more than 3" << endl;
+-        cout << "Enter Password: ";
+-        cin >> stuPassword; }   
+-    else {
+-        cout << "Please rerun the program and input a given value.";
+-    }
+-// probably should make some kind of a exit option or none of the above 
+-    return 0;
+-
+-}
+-
+-
+-
+-
+-// I am just going to try and build something simple to test it - Calvin
+-// The idea is that this will be for both students and administration so I am writting that for now  - Calvin
+\ No newline at end of file
+diff --git a/calvinmain.cpp b/main.cpp
+similarity index 100%
+rename from calvinmain.cpp
+rename to main.cpp
+
+COMMIT 0ccb975  2026-07-13  Future note about week 10 dynamic memory
+diff --git a/calvincourseheader.h b/calvincourseheader.h
+index 6d151bd..3bb1624 100644
+--- a/calvincourseheader.h
++++ b/calvincourseheader.h
+@@ -7,7 +7,7 @@ using namespace std; // instead of std::string
+ 
+ class Course
+ {
+-
++// We can use dynamic memory perhaps for courseName or others to not use up unessisary memory check week 10 classes with dy
+ private:
+ // department must use a character array for the names so char not int
+     char courseNumber[10]; // PRG210 = 6 + \0, 10 leaves room
+@@ -19,6 +19,10 @@ private:
+ 
+ public:
+     Course();
++    ~Course();
++    void
++
++
+ // using the values to build the course for use
+ // const char* pointer I DO NOT WANT CHANGED, Price CAN change per COURSE so double without *. Keeps the naming SET and copies Price NUMBER
+ 
+@@ -30,4 +34,4 @@ Course(const char* courseNumber, const char* courseSection,
+ 
+ // ask about getters and setters
+ 
+-}
++};
+
+COMMIT 5ef0603  2026-07-13  Ask about getters setters
+diff --git a/calvincourseheader.h b/calvincourseheader.h
+index 6302225..6d151bd 100644
+--- a/calvincourseheader.h
++++ b/calvincourseheader.h
+@@ -9,17 +9,25 @@ class Course
+ {
+ 
+ private:
+-    Course();
+ // department must use a character array for the names so char not int
+-    char courseNumber[10];
+-    char courseSection[3];
+-    char name[50];
+-    char schedule[10];
++    char courseNumber[10]; // PRG210 = 6 + \0, 10 leaves room
++    char courseSection[4]; // NAA or NBB which is 4 NBB\0
++    char courseName[50]; // user will decide
++    char courseSchedule[4]; // M,/,W,\0 // \0 means the string will end there so its just M/W // one of M/W (Mon/Wed), T/R (Tue/Thu), W/F (Wed/Fri)
+     double price; //should not be a negative number
+ 
+ 
+ public:
+     Course();
++// using the values to build the course for use
++// const char* pointer I DO NOT WANT CHANGED, Price CAN change per COURSE so double without *. Keeps the naming SET and copies Price NUMBER
++
++// char* = the address where a string starts (like "PRG210")
++
++
++Course(const char* courseNumber, const char* courseSection,
++       const char* courseName, const char* courseSchedule, double price);
+ 
++// ask about getters and setters
+ 
+ }
+diff --git a/calvinmain.cpp b/calvinmain.cpp
+index edbdd21..325f36b 100644
+--- a/calvinmain.cpp
++++ b/calvinmain.cpp
+@@ -20,9 +20,9 @@ int main() {
+     cout << "-----------------------------------------------------------"     << endl;
+ 
+     cout << "Enter your choice [1, 2, 3]: ";
+-    cin >> options
++    cin >> options;
+ 
+-    while (options < 2 || options > 3) { //so long as the options are less than 5 or greater than 3, we will keep asking for a valid input - Calvin
++    while (options < 2 || options > 3) { //so long as the options are less than 5 or greater than 3, we will keep asking // for a valid input - Calvin
+                                          //having issues where input of a high number (10000000000+) or letter causes it to freak out - Calvin
+ 
+         cout << "-----------------------------------------------------------" << endl;
+diff --git a/main.cpp b/main.cpp
+deleted file mode 100644
+index d5cc01b..0000000
+--- a/main.cpp
++++ /dev/null
+@@ -1,40 +0,0 @@
+-#include <iostream>
+-using namespace std;
+-// THIS ALL PROBABLY JUST NEEDS A WHILE LOOP BUT WE ARE GOING TO FIGURE THAT OUT - Calvin
+-int main() {
+-
+-    int logChoice;     // Currently the name for the initial decision from if they are student user or admin - Calvin
+-    int stuPassword; // Holds the student password if we are required to make one - Calvin
+-    int adminPassword; // same same but do not think they are needed just demo - Calvin
+-
+-    cout << "Welcome! Please, let us know the following options." << endl;
+-    cout << "\n1. Student" << endl;
+-    cout << "2. Admin" << endl;
+-    
+-    cout << "Enter value here: ";
+-    cin >> logChoice;
+-  
+-    if (logChoice == 2 ) {
+-        cout << "You selected Administration, please enter your IT given password: " << endl;
+-        cout << "Remember its policy to change your password once every hour and you cant use old ones!" << endl;
+-        cout << "THANK YOU FOR YOUR ATTENTION TO THIS MATTER" << endl; 
+-        cout << "Enter Password: ";
+-        cin >> adminPassword; }
+-    else if (logChoice == 1) {
+-        cout << "You selected Student, please give your user created password" << endl;
+-        cout << "Remember to pick a password stronger than 123. Please. Please... Ok but at least add more than 3" << endl;
+-        cout << "Enter Password: ";
+-        cin >> stuPassword; }   
+-    else {
+-        cout << "Please rerun the program and input a given value.";
+-    }
+-// probably should make some kind of a exit option or none of the above 
+-    return 0;
+-
+-}
+-
+-
+-
+-
+-// I am just going to try and build something simple to test it - Calvin
+-// The idea is that this will be for both students and administration so I am writting that for now  - Calvin
+\ No newline at end of file
+
+COMMIT be73157  2026-07-13  change name of main to test main
+diff --git a/Test_main.cpp b/Test_main.cpp
+new file mode 100644
+index 0000000..d5cc01b
+--- /dev/null
++++ b/Test_main.cpp
+@@ -0,0 +1,40 @@
++#include <iostream>
++using namespace std;
++// THIS ALL PROBABLY JUST NEEDS A WHILE LOOP BUT WE ARE GOING TO FIGURE THAT OUT - Calvin
++int main() {
++
++    int logChoice;     // Currently the name for the initial decision from if they are student user or admin - Calvin
++    int stuPassword; // Holds the student password if we are required to make one - Calvin
++    int adminPassword; // same same but do not think they are needed just demo - Calvin
++
++    cout << "Welcome! Please, let us know the following options." << endl;
++    cout << "\n1. Student" << endl;
++    cout << "2. Admin" << endl;
++    
++    cout << "Enter value here: ";
++    cin >> logChoice;
++  
++    if (logChoice == 2 ) {
++        cout << "You selected Administration, please enter your IT given password: " << endl;
++        cout << "Remember its policy to change your password once every hour and you cant use old ones!" << endl;
++        cout << "THANK YOU FOR YOUR ATTENTION TO THIS MATTER" << endl; 
++        cout << "Enter Password: ";
++        cin >> adminPassword; }
++    else if (logChoice == 1) {
++        cout << "You selected Student, please give your user created password" << endl;
++        cout << "Remember to pick a password stronger than 123. Please. Please... Ok but at least add more than 3" << endl;
++        cout << "Enter Password: ";
++        cin >> stuPassword; }   
++    else {
++        cout << "Please rerun the program and input a given value.";
++    }
++// probably should make some kind of a exit option or none of the above 
++    return 0;
++
++}
++
++
++
++
++// I am just going to try and build something simple to test it - Calvin
++// The idea is that this will be for both students and administration so I am writting that for now  - Calvin
+\ No newline at end of file
+
+COMMIT c953467  2026-07-13  Started a header file
+diff --git a/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..7d823e6
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++calvinmain
++calvinmain.cpp
+diff --git a/calvincourseheader.h b/calvincourseheader.h
+new file mode 100644
+index 0000000..6302225
+--- /dev/null
++++ b/calvincourseheader.h
+@@ -0,0 +1,25 @@
++#pragma once // so if two files both #include "Course.h", the compiler only processes it once instead of complaining that Course was defined twice.
++#include <string> // we need string for course name // used char instead
++#include <iostream>
++
++
++using namespace std; // instead of std::string
++
++class Course
++{
++
++private:
++    Course();
++// department must use a character array for the names so char not int
++    char courseNumber[10];
++    char courseSection[3];
++    char name[50];
++    char schedule[10];
++    double price; //should not be a negative number
++
++
++public:
++    Course();
++
++
++}
+diff --git a/calvinmain.cpp b/calvinmain.cpp
+index b0c265a..edbdd21 100644
+--- a/calvinmain.cpp
++++ b/calvinmain.cpp
+@@ -1,5 +1,5 @@
+ // header files
+-// header files
++// header files        // Currantly when you run the program and select 1,2,3
+ // header files
+ // header files
+ 
+@@ -9,23 +9,28 @@ using namespace std;
+ int main() {
+ 
+     int options;
++
++
+     cout << "-----------------------------------------------------------"     << endl;
+     cout << "Welcome! Please, select an option from the following menu: "     << endl;
+     cout << "-----------------------------------------------------------"     << endl;
+-    cout << "                        1. Student"                              << endl;
+-    cout << "                        2. Admin"                                << endl;
+-    cout << "                        3. Exit"                                 << endl;
++    cout << "|                        2. Student                       |"       << endl;
++    cout << "|                        2. Admin                         |"      << endl;
++    cout << "|                        3. Exit                          |"       << endl;
+     cout << "-----------------------------------------------------------"     << endl;
++
+     cout << "Enter your choice [1, 2, 3]: ";
+-    cin >> options;
++    cin >> options
++
++    while (options < 2 || options > 3) { //so long as the options are less than 5 or greater than 3, we will keep asking for a valid input - Calvin
++                                         //having issues where input of a high number (10000000000+) or letter causes it to freak out - Calvin
+ 
+-    while (options < 1 || options > 3) {
+         cout << "-----------------------------------------------------------" << endl;
+-        cout << "Please enter a valid responce from the menu: " << endl
++        cout << "Please enter a valid responce from the menu: "               << endl  // ask prof why no semicolon here
+              << "-----------------------------------------------------------" << endl
+-             << "                        1. Student" << endl
+-             << "                        2. Admin" << endl
+-             << "                        3. Exit" << endl
++             << "|                       1. Student                        |" << endl
++             << "|                       2. Admin                          |" << endl
++             << "|                       3. Exit                           |" << endl
+              << "-----------------------------------------------------------" << endl;
+         cout << "Enter your choice [1, 2, 3]: ";
+         cin >> options;
+
+COMMIT a022165  2026-07-11  added note about small glitch in calvinmain
+diff --git a/calvinmain.cpp b/calvinmain.cpp
+index cd9edb3..b0c265a 100644
+--- a/calvinmain.cpp
++++ b/calvinmain.cpp
+@@ -9,13 +9,13 @@ using namespace std;
+ int main() {
+ 
+     int options;
+-    cout << "-----------------------------------------------------------" << endl;
+-    cout << "Welcome! Please, select an option from the following menu: " << endl;
+-    cout << "-----------------------------------------------------------" << endl;
+-    cout << "                        1. Student" << endl;
+-    cout << "                        2. Admin" << endl;
+-    cout << "                        3. Exit" << endl;
+-    cout << "-----------------------------------------------------------" << endl;
++    cout << "-----------------------------------------------------------"     << endl;
++    cout << "Welcome! Please, select an option from the following menu: "     << endl;
++    cout << "-----------------------------------------------------------"     << endl;
++    cout << "                        1. Student"                              << endl;
++    cout << "                        2. Admin"                                << endl;
++    cout << "                        3. Exit"                                 << endl;
++    cout << "-----------------------------------------------------------"     << endl;
+     cout << "Enter your choice [1, 2, 3]: ";
+     cin >> options;
+ 
+@@ -36,3 +36,17 @@ int main() {
+ 
+ // i looked up the while loop and it seems to be the best option and am just going to use her wording for this - Calvin
+ // its nice - Calvin
++
++/*main.cpp
++
++This is the file that will have the main function. To make the implementation simpler you can declare following three global variables in this file and can access them in other cpp files using extern keyword
++
++    Department * StoreDepartments = nullptr;
++    int TotalDepartments = 0;
++    const char * csvFile = “Your/Path/To/CSVFile.cs”;
++
++The main function should also:
++
++    Read the csv file if it exists at start and should load data in the StoreDepartments array (see the format of this csv file outlined below)
++    Have a pointer of Interface class and be initialized with the appropriate derived class object based on the selected role (Admin or Student) (it will be the polymorphism here)
++*/
+
+COMMIT 29a074a  2026-07-10  i just keep doing this i will try and do less lmao
+diff --git a/calvinmain.cpp b/calvinmain.cpp
+index da4f99c..cd9edb3 100644
+--- a/calvinmain.cpp
++++ b/calvinmain.cpp
+@@ -9,26 +9,29 @@ using namespace std;
+ int main() {
+ 
+     int options;
+-
++    cout << "-----------------------------------------------------------" << endl;
+     cout << "Welcome! Please, select an option from the following menu: " << endl;
+-
+-    cout << "1. Student" << endl;
+-    cout << "2. Admin" << endl;
+-    cout << "3. Exit" << endl;
+-
++    cout << "-----------------------------------------------------------" << endl;
++    cout << "                        1. Student" << endl;
++    cout << "                        2. Admin" << endl;
++    cout << "                        3. Exit" << endl;
++    cout << "-----------------------------------------------------------" << endl;
+     cout << "Enter your choice [1, 2, 3]: ";
+     cin >> options;
+ 
+     while (options < 1 || options > 3) {
++        cout << "-----------------------------------------------------------" << endl;
+         cout << "Please enter a valid responce from the menu: " << endl
+-             << "1. Student" << endl
+-             << "2. Admin" << endl
+-             << "3. Exit" << endl;
++             << "-----------------------------------------------------------" << endl
++             << "                        1. Student" << endl
++             << "                        2. Admin" << endl
++             << "                        3. Exit" << endl
++             << "-----------------------------------------------------------" << endl;
+         cout << "Enter your choice [1, 2, 3]: ";
+         cin >> options;
+     }
+ 
+-
++    return 0;
+ }
+ 
+ // i looked up the while loop and it seems to be the best option and am just going to use her wording for this - Calvin
+
+COMMIT d619817  2026-07-10  A better main
+diff --git a/calvinmain.cpp b/calvinmain.cpp
+new file mode 100644
+index 0000000..da4f99c
+--- /dev/null
++++ b/calvinmain.cpp
+@@ -0,0 +1,35 @@
++// header files
++// header files
++// header files
++// header files
++
++#include <iostream>
++using namespace std;
++
++int main() {
++
++    int options;
++
++    cout << "Welcome! Please, select an option from the following menu: " << endl;
++
++    cout << "1. Student" << endl;
++    cout << "2. Admin" << endl;
++    cout << "3. Exit" << endl;
++
++    cout << "Enter your choice [1, 2, 3]: ";
++    cin >> options;
++
++    while (options < 1 || options > 3) {
++        cout << "Please enter a valid responce from the menu: " << endl
++             << "1. Student" << endl
++             << "2. Admin" << endl
++             << "3. Exit" << endl;
++        cout << "Enter your choice [1, 2, 3]: ";
++        cin >> options;
++    }
++
++
++}
++
++// i looked up the while loop and it seems to be the best option and am just going to use her wording for this - Calvin
++// its nice - Calvin
+
+COMMIT 3233fb8  2026-07-10  Sorry for the many commits
+diff --git a/main b/main
+index fd4d319..5f24374 100755
+Binary files a/main and b/main differ
+diff --git a/main.cpp b/main.cpp
+index 6388551..d5cc01b 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -1,26 +1,26 @@
+ #include <iostream>
+ using namespace std;
+-
++// THIS ALL PROBABLY JUST NEEDS A WHILE LOOP BUT WE ARE GOING TO FIGURE THAT OUT - Calvin
+ int main() {
+ 
+-    int adminStudent;     // Currently the name for the initial decision from if they are student user or admin
+-    int stuPassword; // Holds the student password if we are required to make one
+-    int adminPassword; // same same
++    int logChoice;     // Currently the name for the initial decision from if they are student user or admin - Calvin
++    int stuPassword; // Holds the student password if we are required to make one - Calvin
++    int adminPassword; // same same but do not think they are needed just demo - Calvin
+ 
+     cout << "Welcome! Please, let us know the following options." << endl;
+     cout << "\n1. Student" << endl;
+     cout << "2. Admin" << endl;
+     
+     cout << "Enter value here: ";
+-    cin >> adminStudent;
++    cin >> logChoice;
+   
+-    if (adminStudent == 2 ) {
++    if (logChoice == 2 ) {
+         cout << "You selected Administration, please enter your IT given password: " << endl;
+         cout << "Remember its policy to change your password once every hour and you cant use old ones!" << endl;
+         cout << "THANK YOU FOR YOUR ATTENTION TO THIS MATTER" << endl; 
+         cout << "Enter Password: ";
+         cin >> adminPassword; }
+-    else if (adminStudent == 1) {
++    else if (logChoice == 1) {
+         cout << "You selected Student, please give your user created password" << endl;
+         cout << "Remember to pick a password stronger than 123. Please. Please... Ok but at least add more than 3" << endl;
+         cout << "Enter Password: ";
+@@ -28,7 +28,7 @@ int main() {
+     else {
+         cout << "Please rerun the program and input a given value.";
+     }
+-
++// probably should make some kind of a exit option or none of the above 
+     return 0;
+ 
+ }
+@@ -36,5 +36,5 @@ int main() {
+ 
+ 
+ 
+-// I am just going to try and build something simple to test it
+-// The idea is that this will be for both students and administration so I am writting that for now 
+\ No newline at end of file
++// I am just going to try and build something simple to test it - Calvin
++// The idea is that this will be for both students and administration so I am writting that for now  - Calvin
+\ No newline at end of file
+
+COMMIT 32a1d79  2026-07-10  Just updated the main main to test it but try running it should work ok
+diff --git a/main b/main
+index acbbe2a..fd4d319 100755
+Binary files a/main and b/main differ
+diff --git a/main.cpp b/main.cpp
+index cc8fe7b..6388551 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -3,14 +3,31 @@ using namespace std;
+ 
+ int main() {
+ 
+-    std::string adminStudent;
++    int adminStudent;     // Currently the name for the initial decision from if they are student user or admin
++    int stuPassword; // Holds the student password if we are required to make one
++    int adminPassword; // same same
+ 
+     cout << "Welcome! Please, let us know the following options." << endl;
+     cout << "\n1. Student" << endl;
+     cout << "2. Admin" << endl;
+-    cout << "Select 1 or 2" << endl;
+-    cin  >> adminStudent;
+-    cout << "Select 1 or 2" << endl;
++    
++    cout << "Enter value here: ";
++    cin >> adminStudent;
++  
++    if (adminStudent == 2 ) {
++        cout << "You selected Administration, please enter your IT given password: " << endl;
++        cout << "Remember its policy to change your password once every hour and you cant use old ones!" << endl;
++        cout << "THANK YOU FOR YOUR ATTENTION TO THIS MATTER" << endl; 
++        cout << "Enter Password: ";
++        cin >> adminPassword; }
++    else if (adminStudent == 1) {
++        cout << "You selected Student, please give your user created password" << endl;
++        cout << "Remember to pick a password stronger than 123. Please. Please... Ok but at least add more than 3" << endl;
++        cout << "Enter Password: ";
++        cin >> stuPassword; }   
++    else {
++        cout << "Please rerun the program and input a given value.";
++    }
+ 
+     return 0;
+ 
+
+COMMIT 9ad0926  2026-07-10  I am just testing
+diff --git a/.vscode/tasks.json b/.vscode/tasks.json
+new file mode 100644
+index 0000000..05054c5
+--- /dev/null
++++ b/.vscode/tasks.json
+@@ -0,0 +1,28 @@
++{
++    "tasks": [
++        {
++            "type": "cppbuild",
++            "label": "C/C++: g++ build active file",
++            "command": "/usr/bin/g++",
++            "args": [
++                "-fdiagnostics-color=always",
++                "-g",
++                "${file}",
++                "-o",
++                "${fileDirname}/${fileBasenameNoExtension}"
++            ],
++            "options": {
++                "cwd": "${fileDirname}"
++            },
++            "problemMatcher": [
++                "$gcc"
++            ],
++            "group": {
++                "kind": "build",
++                "isDefault": true
++            },
++            "detail": "Task generated by Debugger."
++        }
++    ],
++    "version": "2.0.0"
++}
+\ No newline at end of file
+diff --git a/README.md b/README.md
+index def7016..fe24162 100644
+--- a/README.md
++++ b/README.md
+@@ -1,2 +1,194 @@
+ # PRG210-Course-Management-Group-1
+ This will be our repository for our Group Project please reach out if you have issues or trouble using this.
++
++
++Project Title: Course Management System
++
++Introduction
++
++In this project you are going to implement a basic Course Management System. The purpose of this software is to streamline the operations of a Course. This system involves two distinct interfaces: one for admins and one for students, each interface is tailored to meet their specific needs. The student interface allows students to browse departments, add courses to their cart, and proceed to checkout. The admin interface, on the other hand, provides tools for adding departments, course number and courses, and setting schedule and prices, and saving modifications to a CSV file. The system involves object-oriented programming principles, including inheritance and polymorphism, to create a modular and maintainable codebase. —
++
++Section 1: User Interfaces
++
++In a real application, there are different links for login for employees and students. However, for simplicity, you will show an initial menu that will allow user to choose the role.
++
++Initial Menu
++
++Options:
++Student [1]
++Admin [2]
++Exit [3]
++Prompt: Enter your choice [1, 2, 3]:
++Validation: Only accept valid inputs (1, 2, or 3). If invalid, print the same prompt again.
++Admin Interface
++
++This interface handles the management part of the Course and presents the user with appropriate actions
++
++Main Menu
++
++Options:
++List Departments [1]
++Add Department [2]
++Add Course to Department [3]
++Save Changes to CSV [4]
++Exit [5]
++Prompt: Enter your choice [1, 2, 3, 4, 5]:
++Validation: Only accept valid inputs (1, 2, 3, 4 or 5). If invalid, print the same prompt again.
++1. List Departments
++
++Displays: Numbered list of all available department names.
++Show the Main Menu again
++2. Add Department
++
++Prompt: Enter department name:
++Validation: Ensure the department name is not empty. If invalid, print the same prompt again.
++Action: Adds the new department to the list of departments.
++Message: Prints “Department added successfully.”
++Return: Returns to the main menu.
++3. Add Course to Department
++
++Displays: Numbered list of all available department names.
++Prompt: Enter department number [0 to go back]:
++Validation: Only accept valid department numbers. If invalid, print the same prompt again.
++Displays: Numbered list of all available courses in the selected department.
++Action: Prompt for course details.
++Prompt: Enter course number:
++Validation: Ensure the course number is not empty. If invalid, print the same prompt again.
++Prompt: Enter course name:
++Validation: Ensure the course name is not empty. If invalid, print the same prompt again.
++Prompt: Enter course schedule:
++Validation: Only accept one of ‘M/W’, ‘T/R’, ‘W/F’ for schedule. If invalid, print the same prompt again.
++Prompt: Enter course price:
++Validation: Only accept valid positive numbers for price. If invalid, print the same prompt again.
++Action: Adds the course to the selected department.
++Message: Prints “Course added successfully.”
++Return: Returns to the main menu.
++4. Save Changes to CSV
++
++Action: Writes all modifications (departments and courses) to the CSV file.
++Message: Prints “Changes saved successfully.”
++Return: Returns to the main menu.
++5. Exit Program
++
++Exits the program.
++Student Interface
++
++Main Menu
++
++Options:
++Show Cart [1]
++Browse Departments [2]
++Exit [3]
++Prompt: Enter your choice [1, 2, 3]:
++Validation: Only accept valid inputs (1, 2, or 3). If invalid, print the same prompt again.
++1. Show Cart Menu
++
++Options:
++List Courses [1]
++Checkout [2]
++Return to Main Menu [3]
++Prompt: Enter your choice [1, 2, 3]:
++Validation: Only accept valid inputs (1, 2, or 3). If invalid, print the same prompt again.
++1. List Courses:
++Prints all courses in the cart with course number, name, schedule, and price.
++Displays the same menu again.
++2. Checkout:
++If the cart is not empty, prints “Thank you for your purchase,” clears the shopping cart, and returns to the main menu.
++If the cart is empty, prints “No courses in the cart” and displays the same menu again.
++3. Return to Main Menu:
++Returns to the main menu.
++2. Browse Departments
++
++Displays: Numbered list of all available department names.
++Options:
++List Courses of a Department [1]
++Go Back to Main Menu [2]
++Prompt: Enter your choice [1, 2]:
++Validation: Only accept valid inputs (1 or 2). If invalid, print the same prompt again.
++1. List Courses of a Department:
++Prompts: Enter department number [0 to go back]:
++Validation: Only accept valid department numbers. If invalid, print the same prompt again.
++If the entered department number is correct, lists all numbered courses in the department with price per unit course.
++Displays the following menu:
++Add to Cart a Course [1]
++Go Back to Browse Departments Menu [2]
++Prompt: Enter your choice [1, 2]:
++Validation: Only accept valid inputs (1 or 2). If invalid, print the same prompt again.
++1. Add to Cart a Course:
++Prompts: Enter course number to buy [0 to go back]:
++Validation: Only accept valid course numbers. If invalid, print the same prompt again.
++If the course number is correct, adds course schedule and price to the shopping cart, prints “Course added to cart,” and goes back to the courses menu.
++2. Go Back to Browse Departments Menu:
++Returns to the Browse departments menu.
++2. Go Back to Main Menu:
++Returns to the main menu.
++3. Exit Program
++
++Exits the program.
++
++Section 2: Implementation Requirements
++
++Here are implementation requirements for this project:
++
++Classes
++
++Your project must have the classes given below. All data members of all the classes must be private. I have listed only necessary data members, you can use more data members if you feel necessary.
++
++Class: Course Class that will save information of each course, it should have:
++Necessary private data members
++Constructor to initialize the data members
++Necessary public functions
++Class: Department Class that will save all courses of one department, it should have:
++Character array for department name
++Dynamically allocated array of class courses to save courses in this department
++Total number of courses in the department
++Constructor and other necessary public member functions.
++Destructor to clear the courses array
++Class: Cart This class will have courses selected by Student for buying, it should have:
++Dynamically allocated array of Course class, and a corresponding string array to save schedule of each course selected by the Student
++Total count of courses in the cart and total cost of the cart along with 13% tax.
++Necessary functions
++Destructor to clear the memory
++Interface Classes Since there are two types of user interfaces in this project (one for Admin and other for Student) with some commonalities and some differences. You must implement interface classes through inheritance. You should have one base Interface class (with common function declarations) and two derived AdminInterface and StudentInterface. Input validation and error message methods can also go in the base class since they are common.
++main.cpp
++
++This is the file that will have the main function. To make the implementation simpler you can declare following three global variables in this file and can access them in other cpp files using extern keyword
++
++Department * StoreDepartments = nullptr;
++int TotalDepartments = 0;
++const char * csvFile = “Your/Path/To/CSVFile.cs”;
++The main function should also:
++
++Read the csv file if it exists at start and should load data in the StoreDepartments array (see the format of this csv file outlined below)
++Have a pointer of Interface class and be initialized with the appropriate derived class object based on the selected role (Admin or Student) (it will be the polymorphism here)
++Other Implementation Requirements
++
++Here are additional implementation considerations:
++
++Admin can add courses in an existing department in any order (for example first in first department, then in second department and then again in first department) make sure that you properly implement code to update the Courses array in each department.
++All classes must be implemented in their corresponding .h and .cpp files
++You can store data in csv file in the following format:
++<Total Departments>
++<Department 1 Name>, <Total Courses In Department 1>
++<Course 1.1 name>, <Schedule>, <Price>
++<Course 1.2 name>, <Schedule>, <Price>
++...
++<Department 2 Name>, <Total Courses In Department 2> 
++<Course 2.1 name><Schedule>, <Price>
++<Course 2.2 name><Schedule>, <Price>
++If user enters a wrong input show a helpful error message
++Thoroughly comment your code
++You Must use only the concepts taught in the class (stl lists or vectors should NOT be used for Courses and Departments)
++LLM based code will be graded zero
++Submission Details
++
++This is a group project, a group consists of two students.
++The project must be done on GitHub CodeSpaces and regular commits should be made on GitHub. One of you should add your partner as collaborator.
++You must plan and work on this project every week. A bulk commit in the last week raises suspicion!
++In week 13, I will conduct interviews. Each group will have 10 minutes to present their project, demonstrate its functionality, and answer questions about their code. Remember, a programmer can explain their code clearly and fluently!
++Rubric
++
++Maximum marks without inheritance: 70%
++Maximum marks without polymorphism: 90%
++Maximum marks for implementing only one of two interfaces: 50%
++100% marks depend on project interview
+\ No newline at end of file
+diff --git a/main b/main
+new file mode 100755
+index 0000000..acbbe2a
+Binary files /dev/null and b/main differ
+diff --git a/main.cpp b/main.cpp
+new file mode 100644
+index 0000000..cc8fe7b
+--- /dev/null
++++ b/main.cpp
+@@ -0,0 +1,23 @@
++#include <iostream>
++using namespace std;
++
++int main() {
++
++    std::string adminStudent;
++
++    cout << "Welcome! Please, let us know the following options." << endl;
++    cout << "\n1. Student" << endl;
++    cout << "2. Admin" << endl;
++    cout << "Select 1 or 2" << endl;
++    cin  >> adminStudent;
++    cout << "Select 1 or 2" << endl;
++
++    return 0;
++
++}
++
++
++
++
++// I am just going to try and build something simple to test it
++// The idea is that this will be for both students and administration so I am writting that for now 
+\ No newline at end of file
+
+COMMIT e663d7a  2026-07-10  Initial commit
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..def7016
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,2 @@
++# PRG210-Course-Management-Group-1
++This will be our repository for our Group Project please reach out if you have issues or trouble using this.

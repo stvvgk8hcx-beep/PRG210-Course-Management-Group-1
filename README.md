@@ -1,13 +1,6 @@
 # PRG210-Course-Management-Group-1
 This will be our repository for our Group Project please reach out if you have issues or trouble using this.
-This is currently public so names will be covered for now. Please give usernames.
 
-C***** P******
-N***** A*****
-N********* S****
-J*** W******
-
-Project-PRG210
 
 Project Title: Course Management System
 

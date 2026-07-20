@@ -1,0 +1,21 @@
+2026-07-20  stvvgk8hcx-beep  added empty remaining files
+2026-07-20  stvvgk8hcx-beep  added empty remaining files
+2026-07-20  stvvgk8hcx-beep  weekend push commit
+2026-07-17  stvvgk8hcx-beep  asdasdasdasd
+2026-07-16  stvvgk8hcx-beep  daily update added CVS header and department CPP partial
+2026-07-15  stvvgk8hcx-beep  added CSVUtils file
+2026-07-15  stvvgk8hcx-beep  Final Morning Update
+2026-07-15  stvvgk8hcx-beep  o
+2026-07-15  stvvgk8hcx-beep  fixed < 2 not < 1
+2026-07-15  stvvgk8hcx-beep  course cpp and header updates
+2026-07-13  stvvgk8hcx-beep  Future note about week 10 dynamic memory
+2026-07-13  stvvgk8hcx-beep  Ask about getters setters
+2026-07-13  stvvgk8hcx-beep  change name of main to test main
+2026-07-13  stvvgk8hcx-beep  Started a header file
+2026-07-11  stvvgk8hcx-beep  added note about small glitch in calvinmain
+2026-07-10  stvvgk8hcx-beep  i just keep doing this i will try and do less lmao
+2026-07-10  stvvgk8hcx-beep  A better main
+2026-07-10  stvvgk8hcx-beep  Sorry for the many commits
+2026-07-10  stvvgk8hcx-beep  Just updated the main main to test it but try running it should work ok
+2026-07-10  stvvgk8hcx-beep  I am just testing
+2026-07-10  stvvgk8hcx-beep  Initial commit
