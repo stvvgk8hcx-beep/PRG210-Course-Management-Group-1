@@ -15,7 +15,7 @@ Course::Course()
 Course::Course(const char* num, const char* sect, const char* name,
        const char* sched, double p)
 {
-    strncpy(courseNumber, num);
+    strcpy(courseNumber, num);
     strcpy(courseSection, sect);
     strcpy(courseSchedule, sched);
 

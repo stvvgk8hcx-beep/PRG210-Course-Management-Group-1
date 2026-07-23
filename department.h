@@ -1,6 +1,7 @@
 #ifndef DEPARTMENT_H
 #define DEPARTMENT_H
 
+// COMMIT NOTES - Calvin
 // I made this file right after I did course. reasoning is Department will hold many courses is
 
 // Course = one thing, Department = many things.
@@ -27,6 +28,9 @@ class Department
         Department(const char* name); //overload constructor
 
         ~Department(); //deconstructor free the dynamic array different than course!  week 8 p19
+
+        Department(const Department& other);            // copy constructor
+        Department& operator=(const Department& other); // copy-assignment rule of threeeeeee
 
         void addCourse(Course c); // will grow this array by one and stores the course
 

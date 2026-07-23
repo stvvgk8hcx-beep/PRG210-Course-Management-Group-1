@@ -10,7 +10,7 @@ using namespace std; // instead of std::string
 
 class Course
 {
-// Implemented "we can use dynamic memory for courseName to not use up unessisary memory"
+
 private:
 
 // data members are private
@@ -18,7 +18,7 @@ private:
 // department must use a character array for the names so char not int
     char courseNumber[10]; // PRG210 = 6 + \0, 10 leaves room
     char courseSection[4]; // NAA or NBB which is 4 NBB\0
-    char* courseName;      // DYNAMIC sized to  strlen(name)+1 instead of a fixed [50] -> saves memory / makes me smile
+    char* courseName;      //  sized to exactly strlen(name)+1 instead of a fixed [50] -> saves memory.
     char courseSchedule[4]; // M,/,W,\0 // one of M/W (Mon/Wed), T/R (Tue/Thu), W/F (Wed/Fri)
     double price; //should not be a negative number
 
@@ -32,9 +32,9 @@ public:
     Course(const char* num, const char* sect, const char* name,
        const char* sched, double p);
 
-    // rule of Three (Lab 8) - I know is now REQUIRED because courseName owns heap memory new[]
-    ~Course();                                // destructor
-    Course(const Course& other);              // copy constructor
+    // rule of three (Lab 8) -  because courseName owns heap memory (new[])
+    ~Course();                                // destructor: free courseName
+    Course(const Course& other);              // copy constructor: deep copy (Stock b(a);)
     Course& operator=(const Course& other);   // copy-assignment
 
     void display();
@@ -49,3 +49,4 @@ public:
 };
 
 #endif
+
