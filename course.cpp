@@ -68,15 +68,17 @@ Course& Course::operator=(const Course& other)
 }
 
 // week 8 page 11 display will read the private and print them because the MEMBER functions can see the private data
-void Course::display()
+void Course::display() const
 
 {
     cout << courseNumber << " " << courseSection << " " << courseName << " (" << courseSchedule << ") $" << price << endl;
 }
 
+
 // getter bodies - each just hands back one private member
-const char* Course::getCourseNumber()  { return courseNumber; }
-const char* Course::getCourseSection() { return courseSection; }
-const char* Course::getCourseName()    { return courseName; }
-const char* Course::getSchedule()      { return courseSchedule; }
-double      Course::getPrice()         { return price; }
+// Added const to these bad boys too
+const char* Course::getCourseNumber()  const { return courseNumber; }
+const char* Course::getCourseSection() const { return courseSection; }
+const char* Course::getCourseName()    const { return courseName; }
+const char* Course::getSchedule()      const { return courseSchedule; }
+double      Course::getPrice()         const { return price; }

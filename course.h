@@ -37,14 +37,15 @@ public:
     Course(const Course& other);              // copy constructor: deep copy (Stock b(a);)
     Course& operator=(const Course& other);   // copy-assignment
 
-    void display();
+    void display() const;
 
     // getters so the professor's CSVUtils.cpp can READ each private value when it saves
-    const char* getCourseNumber();
-    const char* getCourseSection();
-    const char* getCourseName();
-    const char* getSchedule();
-    double getPrice();
+    // added const to the getters so that they can be called on const Course objects (like in the Cart class)
+    const char* getCourseNumber() const;
+    const char* getCourseSection() const;
+    const char* getCourseName() const;
+    const char* getSchedule() const;
+    double getPrice() const;
 
 };
 
