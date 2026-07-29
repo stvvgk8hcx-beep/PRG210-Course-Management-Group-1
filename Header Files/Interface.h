@@ -8,7 +8,7 @@
 using namespace std;
 
 // same idea as  Lab 9 (PreferredStock : public Stock).
-// AdminInterface and StudentInterface will both inherit from this so the shared stuff is written only one time
+// AdminInterface and StudentInterface children will both inherit from this so the shared stuff is written only one time
 class Interface
 {
 public:
