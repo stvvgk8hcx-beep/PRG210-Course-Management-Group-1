@@ -2,8 +2,9 @@
 #include "Interface.h"
 
 // the destructor is empty but it still has to exist because I declared it virtual in the header
-Interface::~Interface()
-{
+Interface::~Interface() {
+
+
 }
 
 // this is the same validation loop from my main.cpp

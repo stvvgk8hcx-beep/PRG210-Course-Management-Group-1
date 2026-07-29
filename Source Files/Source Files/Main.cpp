@@ -33,12 +33,12 @@ int main() {
     cin >> options;
 
     while (cin.fail() || options < 1 || options > 3) { //so long as the options are less than 1 or greater than 3, we will keep asking // for a valid input
-                                         //having issues where input of a high number (10000000000+) or letter causes it to freak out
+
         cin.clear();                                         // cin after a bad input
         cin.ignore(numeric_limits<streamsize>::max(), '\n'); // dump the junk before asking again
 
-        cout << "-----------------------------------------------------------" << endl;
-        cout << "Please enter a valid responce from the menu: "               << endl  // ask prof why no semicolon here
+        cout << "-----------------------------------------------------------" << endl
+             << "Please enter a valid responce from the menu: "               << endl
              << "-----------------------------------------------------------" << endl
              << "|                       1. Student                        |" << endl
              << "|                       2. Admin                          |" << endl
@@ -48,13 +48,13 @@ int main() {
         cin >> options;
     }
     cin.ignore(numeric_limits<streamsize>::max(), '\n');    // added - clear the newline so the menu getlines work
-
+//para,etroc polymorphism
     // POLYMORPHISM (week 11) - one Interface pointer, point it at the child (admin or student i want
     Interface* ui = nullptr;
     if (options == 1) ui = new StudentInterface();   // 1 is student interface
     else if (options == 2) ui = new AdminInterface(); // 2 is admins
 // it will exit otherwise
-
+// default is static binding, to fix we use Dynamic Binding
     if (ui != nullptr)
     {
         ui->run();    // virtual so the poly is able to pick the right instance and not the wrong one when its loading the information
