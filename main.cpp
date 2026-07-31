@@ -1,43 +1,45 @@
-// header files
-#include "department.h"      // Currantly when you run the program and select 1,2,3
-// header files
-#include "CSVUtils.h" //added file
-
-#include "course.h"
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
-#include <limits>   // prof rec gives numeric_limits so no more bad inputs :)
+#include <limits> 
+ // numeric_limits so a letter/huge number doesnt freak it out
+#include "department.h" // Department type for the globals
+#include "CSVUtils.h" // for th loadFromCSV at startup
+#include "course.h"
+#include "interface.h"
+#include "AdminInterface.h"
+#include "StudentInterface.h"
 using namespace std;
 
+// the 3 globals the assignment wants. defined HERE, the other cpp files reach them with extern
 Department* StoreDepartments = nullptr;
 int TotalDepartments = 0;
-const char* csvFile = "courses.csv";   // added path to csv file ask prof about its location when demonstrating
+const char* csvFile = "courses.csv";
 
 int main() {
+
+    loadFromCSV(csvFile);   // now read the saved data at the start (no file it just says so and keeps going on
 
     int options;
 
 
-    cout << "-----------------------------------------------------------"     << endl;
-    cout << "Welcome! Please, select an option from the following menu: "     << endl;
-    cout << "-----------------------------------------------------------"     << endl;
-    cout << "|                        1. Student                       |"       << endl; // fixed was 2.Student
-    cout << "|                        2. Admin                         |"      << endl;
-    cout << "|                        3. Exit                          |"       << endl;
-    cout << "-----------------------------------------------------------"     << endl;
+    cout << "-----------------------------------------------------------"     << endl
+         << "Welcome! Please, select an option from the following menu: "     << endl
+         << "-----------------------------------------------------------"     << endl
+         << "|                        1. Student                       |"     << endl
+         << "|                        2. Admin                         |"     << endl
+         << "|                        3. Exit                          |"     << endl
+         << "-----------------------------------------------------------"     << endl;
 
     cout << "Enter your choice [1, 2, 3]: ";
     cin >> options;
 
-    // is NOW cin.fail() so a LETTER entered value or a HUGE number doesn't make the program freak out like me on a dancefloor
-    // now it will "cin.fail()" when its not a valid int input is true and is inside the loop
+    while (cin.fail() || options < 1 || options > 3) { //so long as the options are less than 1 or greater than 3, we will keep asking // for a valid input
 
-    while (cin.fail() || options < 1 || options > 3) { //so long as the options are less than 1 or greater than 3, we keep asking - Calvin
+        cin.clear();                                         // cin after a bad input
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // dump the junk before asking again
 
-        cin.clear();                                          // reset/recycle the fail flag so cin works again
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');  // remove the leftover bad input
-
-        cout << "-----------------------------------------------------------" << endl;
-        cout << "Please enter a valid responce from the menu: "               << endl  // ask prof why no semicolon here
+        cout << "-----------------------------------------------------------" << endl
+             << "Please enter a valid responce from the menu: "               << endl
              << "-----------------------------------------------------------" << endl
              << "|                       1. Student                        |" << endl
              << "|                       2. Admin                          |" << endl
@@ -46,10 +48,23 @@ int main() {
         cout << "Enter your choice [1, 2, 3]: ";
         cin >> options;
     }
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');    // added - clear the newline so the menu getlines work
+//para,etroc polymorphism
+    // POLYMORPHISM (week 11) - one Interface pointer, point it at the child (admin or student i want
+    Interface* ui = nullptr;
+    if (options == 1) ui = new StudentInterface();   // 1 is student interface
+    else if (options == 2) ui = new AdminInterface(); // 2 is admins
+// it will exit otherwise
+// default is static binding, to fix we use Dynamic Binding
+    if (ui != nullptr)
+    {
+        ui->run();    // virtual so the poly is able to pick the right instance and not the wrong one when its loading the information
+        delete ui;   // clean up the child virtuallly
+    }
 
-    // this is where an Interface pointer will point at too
-    // AdminInterface + StudentInterface !
-
+// Free the dynamically allocated department array before the program ends. -J
+delete[] StoreDepartments;
+StoreDepartments = nullptr;
+TotalDepartments = 0;
     return 0;
 }
-
