@@ -1,5 +1,3 @@
-// Will follow up on friday class with a more detailed-- 
-// --explanation of the cart.h file and its functions. I want Bushra to review :) -J
 #ifndef CART_H
 #define CART_H
 #include "course.h"
