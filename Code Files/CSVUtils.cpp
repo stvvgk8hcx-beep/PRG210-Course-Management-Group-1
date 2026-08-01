@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "CSVUtils.h"
 #include <fstream>
 #include <iostream>
@@ -34,8 +36,6 @@ bool loadFromCSV(const char *filename)
         std::getline(deptStream, deptName, ',');
         deptStream >> totalCourses;
 
-        // added .c_str(). deptName is a std::string but my Department constructor
-        // wants a const char*, .c_str() makes string a char
         StoreDepartments[i] = Department(deptName.c_str());
 
         for (int j = 0; j < totalCourses; ++j)
@@ -43,17 +43,15 @@ bool loadFromCSV(const char *filename)
             if (!std::getline(file, line))
                 break;
             std::stringstream courseStream(line);
-            std::string courseNumber, courseSection, courseName, schedule; // ADDED courseSection - Calvin
+            std::string courseNumber, courseSection, courseName, schedule;
             double price;
 
             std::getline(courseStream, courseNumber, ',');
-            std::getline(courseStream, courseSection, ',');  // added read my section, right after the number
+            std::getline(courseStream, courseSection, ',');
             std::getline(courseStream, courseName, ',');
             std::getline(courseStream, schedule, ',');
             courseStream >> price;
 
-            // added courseSection so my Course gets all 5 pieces, and put .c_str()
-            // on every string so they fit my const char* constructor (this was the red error on this line)
             StoreDepartments[i].addCourse(Course(courseNumber.c_str(), courseSection.c_str(),
                                                  courseName.c_str(), schedule.c_str(), price));
         }
@@ -77,14 +75,12 @@ bool saveToCSV(const char *filename)
     for (int i = 0; i < TotalDepartments; ++i)
     {
         Department &dept = StoreDepartments[i];
-        file << dept.getName() << ", " << dept.getCourseCount() << "\n";
+        file << dept.getName() << "," << dept.getCourseCount() << "\n";
         for (size_t j = 0; j < dept.getCourseCount(); ++j)
         {
             Course *c = dept.getCourse(j);
-           // added getCourseSection() so the section I read on load gets written
-            // back out too, in the same spot (right after the number) so load and save stay a matching pair
-            file << c->getCourseNumber() << ", " << c->getCourseSection() << ", "
-                 << c->getCourseName() << ", " << c->getSchedule() << ", " << c->getPrice() << "\n";
+            file << c->getCourseNumber() << "," << c->getCourseSection() << ","
+                 << c->getCourseName() << "," << c->getSchedule() << "," << c->getPrice() << "\n";
         }
     }
 
@@ -92,3 +88,14 @@ bool saveToCSV(const char *filename)
     std::cout << "Changes saved to CSV successfully.\n";
     return true;
 }
+
+
+/* ok so now .c_str() on the constructor calls storedepartments because
+inside the exisitng cvs it was std::string but my coourse and department constructors take
+constr char* because i am using char arrays not std::string for memeory
+was getting no matching constructor
+
+course section I also added into this so that it reads say NBB for a course section
+removed the spaces after commands it was causing file load issues where they load in wit hspaces infront of the names
+
+also added define crit warning*/
