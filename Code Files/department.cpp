@@ -96,4 +96,9 @@ void Department::listCourse()
 // added these small getter bodies so other files can read the private data
 const char* Department::getName()       const { return departmentName; }
 int         Department::getCourseCount() const { return courseCount; }
-Course*     Department::getCourse(int index) const { return &courses[index]; } // pointer to the slot in the array
+Course*     Department::getCourse(int index) const
+{
+    // bounds guard - if the index is out of range will now return nullptr instead of reading past the array!!!!! 
+    if (index < 0 || index >= courseCount) return nullptr;
+    return &courses[index]; // pointer to the slot in the array
+}
