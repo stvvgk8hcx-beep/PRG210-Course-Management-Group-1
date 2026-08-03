@@ -92,8 +92,8 @@ void Department::listCourse()
         courses[i].display();
     }
 }
-
+//added const to these as well fron header change
 // added these small getter bodies so other files can read the private data
-const char* Department::getName()        { return departmentName; }
-int         Department::getCourseCount() { return courseCount; }
-Course*     Department::getCourse(int index) { return &courses[index]; } // pointer to the slot in the array
+const char* Department::getName()       const { return departmentName; }
+int         Department::getCourseCount() const { return courseCount; }
+Course*     Department::getCourse(int index) const { return &courses[index]; } // pointer to the slot in the array
