@@ -67,7 +67,7 @@ void AdminInterface::listDepartments() {
 void AdminInterface::addDepartment() {
     string departmentName;
 
-    cout << "\nEnter department name (e.g. Computer Studies): "; // just adding example descriptions to this cpp
+    cout << "\nEnter department name (e.g. Computer Science): "; // just adding example descriptions to this cpp
     getline(cin, departmentName);
 
     // The name cannot be empty or contain a comma because commas
