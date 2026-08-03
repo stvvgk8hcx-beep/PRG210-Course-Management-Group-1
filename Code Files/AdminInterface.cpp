@@ -67,7 +67,7 @@ void AdminInterface::listDepartments() {
 void AdminInterface::addDepartment() {
     string departmentName;
 
-    cout << "\nEnter department name: ";
+    cout << "\nEnter department name (e.g. Computer Studies): "; // just adding example descriptions to this cpp
     getline(cin, departmentName);
 
     // The name cannot be empty or contain a comma because commas
@@ -161,7 +161,7 @@ void AdminInterface::addCourseToDepartment() {
     double price = 0.0;
 
 
-    cout << "\nEnter course number: ";
+    cout << "\nEnter course number (e.g. PRG210): ";
     getline(cin, courseNumber);
  // Course stores its number in char[10], so it can hold nine visible characters and the null terminator.
     while (courseNumber.empty() ||
@@ -174,7 +174,7 @@ void AdminInterface::addCourseToDepartment() {
         getline(cin, courseNumber);
     }
 
-    cout << "Enter course section: ";
+    cout << "Enter course section (e.g. NBB or NAA): ";
     getline(cin, courseSection);
 
     // Course stores its section in char[4], allowing three
@@ -189,7 +189,7 @@ void AdminInterface::addCourseToDepartment() {
         getline(cin, courseSection);
     }
 
-     cout << "Enter course name: ";
+     cout << "Enter course name (e.g. Object Oriented Programming): ";
     getline(cin, courseName);
 
     while (courseName.empty() ||
