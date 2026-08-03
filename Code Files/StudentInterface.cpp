@@ -13,6 +13,8 @@
 extern Department* StoreDepartments;
 extern int TotalDepartments;
 
+// Student main-menu implementation by J.
+
 // Main loop for the student interface, allowing the student to choose between browsing departments or viewing their cart.
 void StudentInterface::run() {
     int choice = 0;
@@ -38,6 +40,7 @@ void StudentInterface::run() {
     } while (choice != 3);
 }
 
+// Student cart-menu and checkout implementation by J.
 // Display the courses in the cart and handles checkout.
 void StudentInterface::showCartMenu() {
    int choice = 0;
@@ -79,7 +82,7 @@ void StudentInterface::showCartMenu() {
     } while (choice != 3);
 }
    
-
+// Student department-listing implementation by J.
 // Prints every available department as a numbered list.
 void StudentInterface::listDepartments() {
 cout << "\n========== DEPARTMENTS ==========" << endl;
@@ -96,6 +99,7 @@ for (int i = 0; i < TotalDepartments; i++) {
 
 } // End of listDepartments function.
 
+// Student department-browsing menu implementation by J.
 // Lets the student choose which department they want to browse.
 void StudentInterface::browseDepartmentsMenu(){
     int choice = 0;
@@ -129,8 +133,8 @@ void StudentInterface::browseDepartmentsMenu(){
     } while (choice != 2);
 }
 
-// Displays one's department's courses and allows the student
-// to select a course to add to studentCart. 
+// Student course-selection and cart integration by J.
+// Displays one's department's courses and allows the student to select a course to add to studentCart.
 void StudentInterface::showDepartmentCourses(int departmentIndex) {
 Department& selectedDepartment =
         StoreDepartments[departmentIndex];

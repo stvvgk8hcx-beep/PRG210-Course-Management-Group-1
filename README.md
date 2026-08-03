@@ -1,5 +1,5 @@
 # PRG210-Course-Management-Group-1
-This will be our repository for our Group Project please reach out if you have issues or trouble using this.
+This will be our repository for our Group Project, please reach out in the group chat if you have issues or trouble using this.
 
 Project Title: Course Management System
 
@@ -9,7 +9,6 @@ g++ -std=c++17 -Wall -Wextra -Wpedantic -I"Header Files" "Code Files"/*.cpp -o m
 
 Run the compiled program with:
 ./main
-
 
 Introduction
 

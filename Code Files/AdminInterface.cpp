@@ -12,6 +12,8 @@ extern Department* StoreDepartments;
 extern int TotalDepartments;
 extern const char* csvFile;
 
+// Production Admin Interface completed, validated, and integrated by J, providing the main loop and department management functionality.
+
 // Displays the Admin Menu until the admin chooses Exit.
 void AdminInterface::run() {
     int choice = 0;
@@ -47,6 +49,7 @@ void AdminInterface::run() {
 }
 
 // Prints a numbered list of every stored department.
+// Production department-listing implementation by J.
 void AdminInterface::listDepartments() {
     cout << "\n========== DEPARTMENTS ==========" << endl;
 
@@ -64,6 +67,7 @@ void AdminInterface::listDepartments() {
 }
 
 // Adds a new department by creating a larger dynamic array.
+// Production department-adding implementation by J.
 void AdminInterface::addDepartment() {
     string departmentName;
 
@@ -118,8 +122,8 @@ void AdminInterface::addDepartment() {
     cout << "Department added successfully." << endl;
 }
 
-// Collects the course information and adds the course
-// to the department selected by the admin.
+// Collects the course information and adds the course to the department selected by the admin.
+// Production course-adding implementation by J.
 void AdminInterface::addCourseToDepartment() {
     // Show the available departments before asking for a number.
     listDepartments();

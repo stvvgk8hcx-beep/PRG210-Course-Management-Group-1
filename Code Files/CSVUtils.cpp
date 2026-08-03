@@ -100,6 +100,7 @@ bool saveToCSV(const char *filename)
 file << dept.getName() << ","
      << dept.getCourseCount() << "\n";
 
+     // Loop type corrected to match getCourseCount() and remove the warning. -J
 for (int j = 0; j < dept.getCourseCount(); ++j)
 
         {

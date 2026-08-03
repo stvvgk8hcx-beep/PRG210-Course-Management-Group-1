@@ -1,5 +1,3 @@
-// ok ok ok ok
-
 #include "cart.h"
 #include <iostream>
 #include <string>
@@ -7,7 +5,9 @@
 
 using namespace std;
 
-// Default constructor hello
+// Cart dynamic-memory, copying, totals, and checkout support implemented by J.
+
+// Default constructor initializes the cart with no courses and zero totals.
 Cart::Cart()
 {
     courses = nullptr;
@@ -17,7 +17,7 @@ Cart::Cart()
     totalCost = 0.0;
 }
 
-// Copy constructor
+// Copy constructor performs a deep copy of the other cart, allocating new memory for courses and schedules.
 Cart::Cart(const Cart& other)
 {
     courseCount = other.courseCount;
@@ -39,7 +39,7 @@ Cart::Cart(const Cart& other)
         schedules = nullptr;
     }
 }
-// Assignment operator
+// Assignment operator performs a deep copy of the other cart, properly handling self-assignment and memory management.
 Cart& Cart::operator=(const Cart& other)
 {
     if (this != &other)
@@ -69,14 +69,14 @@ Cart& Cart::operator=(const Cart& other)
     return *this;
 }
 
-// Destructor
+// Destructor releases the dynamically allocated memory for courses and schedules.
 Cart::~Cart()
 {
     delete[] courses;
     delete[] schedules;
 }
 
-// Add Course
+// Add Course adds a new course to the cart, expanding the arrays and updating totals.
 void Cart::addCourse(const Course& course)
 {
     Course* tempCourses = new Course[courseCount + 1];
@@ -100,7 +100,7 @@ void Cart::addCourse(const Course& course)
     updateTotals();
 }
 
-// Display Cart
+// Display Cart lists all courses in the cart along with the subtotal, tax, and total cost.
 void Cart::listCourses()
 {
     if (isEmpty())
@@ -121,7 +121,7 @@ void Cart::listCourses()
     cout << "Total    : $" << totalCost << endl;
 }
 
-// Clear Cart
+// Clear Cart removes all courses from the cart and resets totals.
 void Cart::clearCart()
 {
     delete[] courses;
@@ -133,7 +133,7 @@ void Cart::clearCart()
     totalCost = 0.0;
 }
 
-// Private Helper
+// Private Helper updates the subtotal and total cost based on the current courses in the cart.
 void Cart::updateTotals()
 {
     subtotal = 0.0;

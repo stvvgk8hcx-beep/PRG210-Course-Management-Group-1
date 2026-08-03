@@ -3,7 +3,7 @@
 #include "course.h"
 #include <string>
 
-
+// Primary Cart class implementation by J.
 class Cart {
 private:
 

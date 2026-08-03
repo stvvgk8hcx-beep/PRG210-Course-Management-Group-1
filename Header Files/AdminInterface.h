@@ -3,7 +3,7 @@
 
 #include "interface.h"   //AdminInterface IS-A Interface
 
-// AdminInterface : public Interface  <- same inheritance in lab 9
+// Production AdminInterface declarations stared by C, completed by J.
 // this is the admin menu. it gets run() + getValidChoice() from the base and just adds its own stuff
 class AdminInterface : public Interface {
 public:
