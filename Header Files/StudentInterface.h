@@ -15,7 +15,6 @@ private:
 
     void showCartMenu();
     void browseDepartmentsMenu();
-    void listDepartmentsMenu();
     void listDepartments();
     void showDepartmentCourses(int departmentIndex);
 // This overrides the pure virtual function from the Interface class,

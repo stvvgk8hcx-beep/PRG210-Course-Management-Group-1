@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "course.h"
+#include <iomanip>
 // its getting iostream and cstring from header!
 
 Course::Course()
@@ -71,10 +72,8 @@ Course& Course::operator=(const Course& other)
 }
 
 // week 8 page 11 display will read the private and print them because the MEMBER functions can see the private data
-void Course::display() const
-
-{
-    cout << courseNumber << " " << courseSection << " " << courseName << " (" << courseSchedule << ") $" << price << endl;
+void Course::display() const {
+    cout << courseNumber << " " << courseSection << " " << courseName << " (" << courseSchedule << ") $" << fixed << setprecision(2) << price << endl;
 }
 // getter bodies - each just hands back one private member
 // Added const to these bad boys too

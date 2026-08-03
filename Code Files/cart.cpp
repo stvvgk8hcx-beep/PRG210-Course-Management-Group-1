@@ -3,6 +3,7 @@
 #include "cart.h"
 #include <iostream>
 #include <string>
+#include <iomanip>
 
 using namespace std;
 
@@ -114,6 +115,7 @@ void Cart::listCourses()
         courses[i].display();
     }
 
+    cout << fixed << setprecision(2);
     cout << "\nSubtotal: $" << subtotal << endl;
     cout << "Tax (13%): $" << getTax() << endl;
     cout << "Total    : $" << totalCost << endl;

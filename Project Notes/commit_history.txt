@@ -1,19 +1,19 @@
+2026-08-03  vulpinecrime     Completed AdminInterface and final project integration
+    "            "           Added department/course management and input validation
+    "            "           Fixed CSV compatibility, money formatting, and safe name copying
+    "            "           Completed warning-free compilation and manual workflow testing
 2026-07-31  vulpinecrime     Completed StudentInterface.h and StudentInterface.cpp
     "            "           Compilation was completed successfully with no errors.
 2026-07-23  vulpinecrime     updated course.cpp and course.h files to include const to work with cart
-2026-07-23  vulpinecrime     updated cart header cpp files
-2026-07-20  stvvgk8hcx-beep  added empty remaining files
+2026-07-23       "           updated cart header cpp files
 2026-07-20  stvvgk8hcx-beep  added empty remaining files
 2026-07-20  stvvgk8hcx-beep  weekend push commit
 2026-07-17  stvvgk8hcx-beep  asdasdasdasd
 2026-07-16  stvvgk8hcx-beep  daily update added CVS header and department CPP partial
 2026-07-15  stvvgk8hcx-beep  added CSVUtils file
 2026-07-15  stvvgk8hcx-beep  Final Morning Update
-2026-07-15  stvvgk8hcx-beep  o
 2026-07-15  stvvgk8hcx-beep  fixed < 2 not < 1
 2026-07-15  stvvgk8hcx-beep  course cpp and header updates
-2026-07-13  stvvgk8hcx-beep  Future note about week 10 dynamic memory
-2026-07-13  stvvgk8hcx-beep  Ask about getters setters
 2026-07-13  stvvgk8hcx-beep  change name of main to test main
 2026-07-13  stvvgk8hcx-beep  Started a header file
 2026-07-11  stvvgk8hcx-beep  added note about small glitch in calvinmain

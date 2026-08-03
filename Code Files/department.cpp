@@ -9,16 +9,15 @@ Department::Department()
 
 }
 
-Department::Department(const char* name)
+Department::Department(const char* name) {
+    // Copy at most 49 characters, leaving one position for '\0'. -J
+    strncpy(departmentName, name, 49);
+    departmentName[49] = '\0';
 
-{
-    strcpy(departmentName, name);
     courses = nullptr;
     courseCount = 0;
-// Department starts with its name
-// Overload Constructor from week 8
-
 }
+
 //now destructor to free that memory
 Department::~Department()   // NOTE: was "Department::Department()" by mistake - the ~ makes it the destructor, not a 3rd constructor
 {
@@ -30,7 +29,8 @@ Department::~Department()   // NOTE: was "Department::Department()" by mistake -
 // rule of 3 - same method as Course, but now its for the whole course array
 Department::Department(const Department& other)
 {
-    strcpy(departmentName, other.departmentName);
+    strncpy(departmentName, other.departmentName, 49);
+departmentName[49] = '\0';
     courseCount = other.courseCount;
     if (courseCount > 0)
     {
@@ -48,7 +48,8 @@ Department& Department::operator=(const Department& other)
     if (this == &other) return *this;   // 1) self-assignment guard
     delete[] courses;                    // 2) free old array
 
-    strcpy(departmentName, other.departmentName);
+    strncpy(departmentName, other.departmentName, 49);
+    departmentName[49] = '\0';
     courseCount = other.courseCount;
     if (courseCount > 0)                 // 3) new array + copy
     {

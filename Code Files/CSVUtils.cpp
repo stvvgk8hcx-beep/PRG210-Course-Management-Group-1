@@ -9,6 +9,14 @@
 extern Department *StoreDepartments;
 extern int TotalDepartments;
 
+// Older CSV versions placed spaces after commas.
+// This removes those spaces before values enter our objects.
+void removeLeadingSpaces(std::string& value) {
+    while (!value.empty() && value[0] == ' ') {
+        value.erase(0, 1);
+    }
+}
+
 bool loadFromCSV(const char *filename)
 {
     std::ifstream file(filename);
@@ -52,8 +60,22 @@ bool loadFromCSV(const char *filename)
             std::getline(courseStream, schedule, ',');
             courseStream >> price;
 
-            StoreDepartments[i].addCourse(Course(courseNumber.c_str(), courseSection.c_str(),
-                                                 courseName.c_str(), schedule.c_str(), price));
+// Remove spaces left by CSV files created by older versions.
+removeLeadingSpaces(courseNumber);
+removeLeadingSpaces(courseSection);
+removeLeadingSpaces(courseName);
+removeLeadingSpaces(schedule);
+
+StoreDepartments[i].addCourse(
+    Course(
+        courseNumber.c_str(),
+        courseSection.c_str(),
+        courseName.c_str(),
+        schedule.c_str(),
+        price
+    )
+);
+
         }
     }
 
@@ -75,8 +97,11 @@ bool saveToCSV(const char *filename)
     for (int i = 0; i < TotalDepartments; ++i)
     {
         Department &dept = StoreDepartments[i];
-        file << dept.getName() << "," << dept.getCourseCount() << "\n";
-        for (size_t j = 0; j < dept.getCourseCount(); ++j)
+file << dept.getName() << ","
+     << dept.getCourseCount() << "\n";
+
+for (int j = 0; j < dept.getCourseCount(); ++j)
+
         {
             Course *c = dept.getCourse(j);
             file << c->getCourseNumber() << "," << c->getCourseSection() << ","
